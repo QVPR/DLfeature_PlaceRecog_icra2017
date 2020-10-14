@@ -18,7 +18,7 @@ import scipy.io
 import string
 import sys
 import os
-
+os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 ############################################### PATH ########################################
 # use "print [(k, v.data.shape) for k, v in net.blobs.items()]" to check the dimensions of the corresponding layers.
 pool1_dim = 69984; # 96*27*27
@@ -32,10 +32,12 @@ fc8_dim = 2543; # keep these features dim fixed as they need to match the networ
 folder = ''
 fileidx = ''
 
-dataset = 'nordland'  # you can update this file name using your own dataset name
+modelName = 'HybridNet' # or 'HybridNet'
+modelPath = "/home/gargs/n9349995/data/trained_models/{}/".format(modelName)
+datasetPath = "/work/qvpr/data/ready/gt_aligned/nordland/spring/"
+dataset = 'nordland_spring'  # you can update this file name using your own dataset name
 
 images_file =  dataset + '.txt'; # This is my image list [img_path...], each line specifies the location of one image file
-
 
 # uncomment the line you want to extract features from layers other than fc7. 
 #cv1_save = 'conv1.mat'; # Path to save extratced feature vector
@@ -44,32 +46,34 @@ images_file =  dataset + '.txt'; # This is my image list [img_path...], each lin
 #cv4_save = 'conv4.mat'; # Path to save extratced feature vector
 #cv5_save = 'conv5.mat'; # Path to save extratced feature vector
 #cv6_save = dataset + '_feat/conv6.mat'; # Path to save extratced feature vector
-fc7_save = dataset + '_feat/fc7.mat'; # Path to save extratced feature vector
+fc7_save = '{}_'.format(modelName) + dataset + '_feat_fc7.mat'; # Path to save extratced feature vector
 #fc8_save = dataset + '_feat/fc8.mat'; # Path to save extratced feature vector
 
-
-model_file  = 'HybridNet/HybridNet.caffemodel'; # This is my pre-trained caffe model
+model_file  = os.path.join(modelPath,'{}.caffemodel'.format(modelName)); # This is my pre-trained caffe model
 #print model_file
 ####################################setup caffe########################################
-caffe.set_mode_gpu()
-net = caffe.Net('HybridNet/deploy.prototxt',
-                'HybridNet/HybridNet.caffemodel',
+caffe.set_mode_cpu()
+net = caffe.Net(os.path.join(modelPath,'deploy.prototxt'),
+                model_file,
                 caffe.TEST)
 
 # input preprocessing: 'data' is the name of the input blob == net.inputs[0]
 transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
 transformer.set_transpose('data', (2,0,1))
-transformer.set_mean('data', np.load('HybridNet/amosnet_mean.npy').mean(1).mean(1)) # mean pixel
+transformer.set_mean('data', np.load(os.path.join(modelPath,'amosnet_mean.npy')).mean(1).mean(1)) # mean pixel
 transformer.set_raw_scale('data', 255)  # the reference model operates on images in [0,255] range instead of [0,1]
 transformer.set_channel_swap('data', (2,1,0))  # the reference model has channels in BGR order instead of RGB
 net.blobs['data'].reshape(1,3,227,227)
 
-file_images   = open(images_file);
-buffer_images = file_images.readlines();
+# file_images   = open(images_file);
+# buffer_images = file_images.readlines();
 
-lst_images = [];
-for index in range(0,len(buffer_images)):
-    lst_images.append(string.replace(buffer_images[index].split()[0],'\n','')); #eliminate \n
+# lst_images = [];
+# for index in range(0,len(buffer_images)):
+#     lst_images.append(string.replace(buffer_images[index].split()[0],'\n','')); #eliminate \n
+
+lst_images = sorted(os.listdir(datasetPath))#[:2000]
+lst_images = [f for f in lst_images if '.png' in f or '.jpg' in f]
 
 #fea_cv1 = np.zeros((len(lst_images),pool1_dim));
 #fea_cv1 = np.zeros((len(lst_images),96,27,27));
@@ -82,11 +86,11 @@ fea_fc7 = np.zeros((len(lst_images),fc7_dim));
 #fea_fc8 = np.zeros((len(lst_images),fc8_dim));
 
 i = 0;
-tt = len(buffer_images);
-print tt;
+tt = len(lst_images);
+print(tt);
 for img in lst_images:
     
-    net.blobs['data'].data[...] = transformer.preprocess('data', caffe.io.load_image(img))
+    net.blobs['data'].data[...] = transformer.preprocess('data', caffe.io.load_image(os.path.join(datasetPath,img)))
     out = net.forward()
 
   #  fea = np.squeeze(net.blobs['pool1'].data); # Extract feature from fc layer
@@ -113,9 +117,10 @@ for img in lst_images:
     #fea = np.squeeze(net.blobs['fc8_new'].data);
     #fea_fc8[i,:] = fea;
 
-    print i;
+    print(i);
     i += 1;
 
 #scipy.io.savemat(cv6_save,{'fea_cv6':fea_cv6});
-scipy.io.savemat(fc7_save,{'fea_fc7':fea_fc7});
+# scipy.io.savemat(fc7_save,{'fea_fc7':fea_fc7});
 #scipy.io.savemat(fc8_save,{'fea_fc8':fea_fc8});
+np.savez(fc7_save,fea_fc7)
