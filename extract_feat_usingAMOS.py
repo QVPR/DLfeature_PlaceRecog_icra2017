@@ -34,8 +34,8 @@ fileidx = ''
 
 modelName = 'HybridNet' # or 'HybridNet'
 modelPath = "/home/gargs/n9349995/data/trained_models/{}/".format(modelName)
-datasetPath = "/work/qvpr/data/ready/gt_aligned/nordland/spring/"
-dataset = 'nordland_spring'  # you can update this file name using your own dataset name
+datasetPath = "/work/qvpr/data/ready/RobotCar/2015-03-17-11-08-44/stereo/left/images/"
+dataset = '2015-03-17-11-08-44_stereo_left'  # you can update this file name using your own dataset name
 
 images_file =  dataset + '.txt'; # This is my image list [img_path...], each line specifies the location of one image file
 
@@ -89,8 +89,8 @@ i = 0;
 tt = len(lst_images);
 print(tt);
 for img in lst_images:
-    
-    net.blobs['data'].data[...] = transformer.preprocess('data', caffe.io.load_image(os.path.join(datasetPath,img)))
+    imData = caffe.io.load_image(os.path.join(datasetPath,img))[:800,:,:]
+    net.blobs['data'].data[...] = transformer.preprocess('data', imData)
     out = net.forward()
 
   #  fea = np.squeeze(net.blobs['pool1'].data); # Extract feature from fc layer
