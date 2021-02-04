@@ -8,9 +8,9 @@
 
 ############################Library########################################
 # Make sure that caffe is on the python path:
-file_root = '/home/jason/Install/caffe-master/'  # point this to the root directory of your caffe packages
-import sys
-sys.path.insert(0, file_root + 'python')
+# file_root = '/home/jason/Install/caffe-master/'  # point this to the root directory of your caffe packages
+# import sys
+# sys.path.insert(0, file_root + 'python')
 import caffe
 
 import numpy as np;
@@ -18,7 +18,18 @@ import scipy.io
 import string
 import sys
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="-1"
+
+
+modelName = 'HybridNet' # or 'HybridNet'
+modelPath = "/work/qvpr/models/{}/".format(modelName)
+datasetPath = "/work/qvpr/data/ready/RobotCar/2015-03-17-11-08-44/stereo/left/images/"
+uniFileName = ""
+mode = 'cpu'
+
+if mode == 'cpu':
+    os.environ["CUDA_VISIBLE_DEVICES"]="-1"
+elif mode == 'gpu':
+    os.environ["CUDA_VISIBLE_DEVICES"]="0"
 ############################################### PATH ########################################
 # use "print [(k, v.data.shape) for k, v in net.blobs.items()]" to check the dimensions of the corresponding layers.
 pool1_dim = 69984; # 96*27*27
@@ -32,12 +43,7 @@ fc8_dim = 2543; # keep these features dim fixed as they need to match the networ
 folder = ''
 fileidx = ''
 
-modelName = 'HybridNet' # or 'HybridNet'
-modelPath = "/home/gargs/n9349995/data/trained_models/{}/".format(modelName)
-datasetPath = "/work/qvpr/data/ready/RobotCar/2015-03-17-11-08-44/stereo/left/images/"
-dataset = '2015-03-17-11-08-44_stereo_left'  # you can update this file name using your own dataset name
-
-images_file =  dataset + '.txt'; # This is my image list [img_path...], each line specifies the location of one image file
+# images_file =  dataset + '.txt'; # This is my image list [img_path...], each line specifies the location of one image file
 
 # uncomment the line you want to extract features from layers other than fc7. 
 #cv1_save = 'conv1.mat'; # Path to save extratced feature vector
@@ -46,13 +52,18 @@ images_file =  dataset + '.txt'; # This is my image list [img_path...], each lin
 #cv4_save = 'conv4.mat'; # Path to save extratced feature vector
 #cv5_save = 'conv5.mat'; # Path to save extratced feature vector
 #cv6_save = dataset + '_feat/conv6.mat'; # Path to save extratced feature vector
-fc7_save = '{}_'.format(modelName) + dataset + '_feat_fc7.mat'; # Path to save extratced feature vector
+fc7_save = '{}_'.format(modelName) + uniFileName + '_feat_fc7.mat'; # Path to save extratced feature vector
 #fc8_save = dataset + '_feat/fc8.mat'; # Path to save extratced feature vector
 
 model_file  = os.path.join(modelPath,'{}.caffemodel'.format(modelName)); # This is my pre-trained caffe model
 #print model_file
 ####################################setup caffe########################################
-caffe.set_mode_cpu()
+
+if mode == 'cpu':
+    caffe.set_mode_cpu()
+elif mode == 'gpu':
+    caffe.set_mode_gpu()
+
 net = caffe.Net(os.path.join(modelPath,'deploy.prototxt'),
                 model_file,
                 caffe.TEST)
@@ -89,7 +100,7 @@ i = 0;
 tt = len(lst_images);
 print(tt);
 for img in lst_images:
-    imData = caffe.io.load_image(os.path.join(datasetPath,img))[:800,:,:]
+    imData = caffe.io.load_image(os.path.join(datasetPath,img))#[:800,:,:]
     net.blobs['data'].data[...] = transformer.preprocess('data', imData)
     out = net.forward()
 
