@@ -142,7 +142,7 @@ def main():
     #scipy.io.savemat(cv6_save,{'fea_cv6':fea_cv6});
     # scipy.io.savemat(fc7_save,{'fea_fc7':fea_fc7});
     #scipy.io.savemat(fc8_save,{'fea_fc8':fea_fc8});
-    np.savez(fc7_save,fea_fc7)
+    np.save(fc7_save,fea_fc7)
 
 
 if __name__ == "__main__":
