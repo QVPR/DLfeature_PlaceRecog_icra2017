@@ -22,7 +22,7 @@ import os
 
 modelName = 'HybridNet' # or 'HybridNet'
 modelPath = "/work/qvpr/models/{}/".format(modelName)
-datasetPath = "/work/qvpr/data/ready/RobotCar/2015-03-17-11-08-44/stereo/left/images/"
+datasetPath = "/work/qvpr/data/ready/gt_aligned/sample_2014-Multi-Lane-Road-Sideways-Camera/NIL/images/"
 uniFileName = ""
 mode = 'cpu'
 
