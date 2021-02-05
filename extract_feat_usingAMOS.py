@@ -60,7 +60,7 @@ def main():
     #cv4_save = 'conv4.mat'; # Path to save extratced feature vector
     #cv5_save = 'conv5.mat'; # Path to save extratced feature vector
     #cv6_save = dataset + '_feat/conv6.mat'; # Path to save extratced feature vector
-    fc7_save = '{}_'.format(modelName) + uniFileName + '_feat_fc7.mat'; # Path to save extratced feature vector
+    fc7_save = '{}_'.format(modelName) + uniFileName + '_feat_fc7'; # Path to save extratced feature vector
     #fc8_save = dataset + '_feat/fc8.mat'; # Path to save extratced feature vector
 
     model_file  = os.path.join(modelPath,'{}.caffemodel'.format(modelName)); # This is my pre-trained caffe model
