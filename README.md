@@ -16,6 +16,7 @@ When a job is assigned:
 ``` shell
 source /etc/profile.d/modules.sh
 module load caffe/rc3-foss-2016a-7.5.18-python-2.7.11
+cd /work/qvpr/workspace/DLfeature_PlaceRecog_icra2017/
 ```
 
 ## Extract features:
